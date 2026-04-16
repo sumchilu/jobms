@@ -1,12 +1,16 @@
 package com.rnd.sb.jobms.job.service.impl;
 
 
+import com.rnd.sb.jobms.job.model.Company;
 import com.rnd.sb.jobms.job.model.Job;
+import com.rnd.sb.jobms.job.model.dto.JobCompanyDTO;
 import com.rnd.sb.jobms.job.repository.JobRepository;
 import com.rnd.sb.jobms.job.service.JobService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,8 +22,17 @@ public class JobServiceImpl implements JobService {
 
     //private Long nextId = 1L;
     @Override
-    public List<Job> getAll() {
-        return jobRepository.findAll();
+    public List<JobCompanyDTO> getAll() {
+        List<JobCompanyDTO> jobCompanyDTOS = new ArrayList<>();
+        List<Job> jobs = jobRepository.findAll();
+        RestTemplate restTemplate = new RestTemplate();
+        for (Job job : jobs) {
+            Company company = restTemplate.getForObject("http://localhost:8082/company/"+job.getCompanyId(), Company.class);
+            jobCompanyDTOS.add(new JobCompanyDTO(job, company));
+        }
+
+
+        return jobCompanyDTOS;
     }
 
     @Override
